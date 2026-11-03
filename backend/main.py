@@ -8,6 +8,8 @@ from src.routers.handlers.http_error import http_error_handler
 
 from src.database import Base, engine
 
+from src.scheduler.page_flip_scheduler import run_page_flip_scheduler
+
 from src.routers.api import router as router_api
 
 
@@ -19,7 +21,7 @@ from src.routers.api import router as router_api
 async def lifespan(application: FastAPI):
     ''' Starts the background schedulers alongside the app and cancels them on shutdown. '''
     tasks = [
-        # asyncio.create_task(run_<name>_scheduler()),
+        asyncio.create_task(run_page_flip_scheduler()),
     ]
     yield
     for task in tasks:

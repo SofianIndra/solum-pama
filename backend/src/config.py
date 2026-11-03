@@ -49,14 +49,21 @@ VALID_LED_DURATIONS = ('0s', '10s', '30s', '60s', '1m', '90s', '120s', '2m', '15
 
 # MS_STOCK COLUMN -> SOLUM ARTICLE DATA KEY (sent to SOLUM when one of these columns changes)
 STOCK_SOLUM_DATA_KEYS = {
-    'item_name': 'Mat_Desc',
+    'item_name': 'Material_Description',
     'mnemonic': 'Mnemonic',
     'own_stock': 'Own_Stock',
     'storage_bin': 'Storage_Bin',
-    'min_stock': 'MinStock',
-    'max_stock': 'MaxStock',
+    'min_stock': 'Min_Inventory',
+    'max_stock': 'Max_Inventory',
     'stock_on_hand': 'StockOnHand',
-    'stock_on_hand_rfid': 'StockOnHandRFID',
+    'stock_on_hand_rfid': 'StockRFID',
+}
+
+# MS_STOCK COLUMN -> ON PREMISE ARTICLE DATA KEY (the same keys, plus the stock status the On Premise
+# label template shows)
+STOCK_SOLUM_ON_PREMISE_DATA_KEYS = {
+    **STOCK_SOLUM_DATA_KEYS,
+    'stock_status': 'StockStatus',
 }
 
 

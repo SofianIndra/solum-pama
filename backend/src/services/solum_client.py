@@ -8,6 +8,7 @@ from urllib.parse import urlencode
 import httpx
 from dotenv import load_dotenv
 
+from src.config import SOLUM_SERVER_ON_PREMISE
 from src.domain.master.ms_config import service as serviceMsConfig
 
 # Load environment variables from .env
@@ -33,6 +34,23 @@ ARTICLES_PATH = '/common/api/v2/common/articles'
 ARTICLES_LED_PATH = '/common/api/v2/common/articles/led'
 STORES_PATH = '/common/api/v2/common/store'
 
+# On Premise AIMS (Core v4) has its own API: no login, a store is a station (stationCode) and there is
+# no company
+ON_PREMISE_STATIONS_PATH = '/stations'
+ON_PREMISE_ARTICLES_PATH = '/articles'
+ON_PREMISE_ARTICLE_PATH = '/articles/article'
+ON_PREMISE_ARTICLE_LABELS_PATH = '/labels/article'
+ON_PREMISE_LABELS_LED_PATH = '/labels/contents/led'
+ON_PREMISE_LABELS_PATH = '/labels'
+ON_PREMISE_LABELS_PAGE_PATH = '/labels/contents/page'
+ON_PREMISE_LABEL_TYPE_PATH = '/labels/type'
+
+# Labels read per GET /labels request; the label list is paged (X-totalPages header)
+ON_PREMISE_LABEL_LIST_SIZE = 100
+
+# On Premise GET /articles has no name filter, so up to this many articles are read and filtered here
+ON_PREMISE_ARTICLE_SEARCH_SIZE = 1000
+
 # Refresh a minute early so a token never expires halfway through a request
 TOKEN_EXPIRY_MARGIN_SECONDS = 60
 
@@ -57,6 +75,15 @@ PUSH_ARTICLES_API = SolumApi('Kirim Data Artikel', 'POST', ARTICLES_PATH)
 BLINK_LED_API = SolumApi('Nyalakan LED Label', 'PUT', ARTICLES_LED_PATH)
 LIST_STORES_API = SolumApi('Daftar Store', 'GET', STORES_PATH)
 LIST_ARTICLES_API = SolumApi('Daftar Artikel', 'GET', ARTICLES_PATH)
+ON_PREMISE_LIST_STORES_API = SolumApi('Daftar Store', 'GET', ON_PREMISE_STATIONS_PATH)
+ON_PREMISE_LIST_ARTICLES_API = SolumApi('Daftar Artikel', 'GET', ON_PREMISE_ARTICLES_PATH)
+ON_PREMISE_GET_ARTICLE_API = SolumApi('Ambil Data Artikel', 'GET', ON_PREMISE_ARTICLE_PATH)
+ON_PREMISE_PUSH_ARTICLES_API = SolumApi('Kirim Data Artikel', 'POST', ON_PREMISE_ARTICLES_PATH)
+ON_PREMISE_ARTICLE_LABELS_API = SolumApi('Cari Label Artikel', 'GET', ON_PREMISE_ARTICLE_LABELS_PATH)
+ON_PREMISE_BLINK_LED_API = SolumApi('Nyalakan LED Label', 'PUT', ON_PREMISE_LABELS_LED_PATH)
+ON_PREMISE_LIST_LABELS_API = SolumApi('Daftar Label', 'GET', ON_PREMISE_LABELS_PATH)
+ON_PREMISE_LABEL_TYPE_API = SolumApi('Tipe Label', 'GET', ON_PREMISE_LABEL_TYPE_PATH)
+ON_PREMISE_CHANGE_PAGE_API = SolumApi('Ganti Halaman Label', 'POST', ON_PREMISE_LABELS_PAGE_PATH)
 
 
 # Raised for every failed SOLUM call. message names the SOLUM API that failed, its method + URL and the
@@ -92,6 +119,17 @@ def get_api_url(api: SolumApi):
         raise build_solum_error(api, None, 'server SOLUM belum diatur, isi IP + port (On Premise) atau '
                                            'API URL (SaaS) di tab Config')
     return api_url
+
+
+# True when the Config tab points at an On Premise AIMS server
+def is_on_premise():
+    return serviceMsConfig.get_solum_server_type() == SOLUM_SERVER_ON_PREMISE
+
+
+# On Premise has no API for this call yet, so it is not sent instead of hitting a SaaS path there
+def raise_on_premise_not_supported(api: SolumApi):
+    if is_on_premise():
+        raise build_solum_error(api, None, 'belum didukung untuk server On Premise')
 
 
 # Full SOLUM URL of a call, for logs, error messages and the result shown to the user
@@ -146,8 +184,9 @@ async def send_solum_request(api_url: str, api: SolumApi, required_by: Optional[
         raise build_solum_error(api, url, f'server tidak dapat dihubungi ({error or type(error).__name__})',
                                 required_by)
 
-    # The login reply carries the token, so only its status is logged
-    reply_text = '' if api is LOGIN_API else response.text
+    # The login reply carries the token and the label list is large and read every few seconds by the page
+    # flip scheduler, so only their status is logged
+    reply_text = '' if api in (LOGIN_API, ON_PREMISE_LIST_LABELS_API) else response.text
     logger.info('[SOLUM] <- %s %s HTTP %s %s', api.method, api.path, response.status_code, reply_text)
     if response.is_success or response.status_code in allowed_statuses:
         return response
@@ -196,6 +235,7 @@ async def get_access_token(api_url: str, required_by: SolumApi):
 # Same endpoint the solum-alfa "Data Artikel" tab uses: POST /common/api/v2/common/articles.
 # SOLUM only queues the update; the label changes a moment later. Returns (status_code, body).
 async def push_articles(articles: list, company: str, store: str):
+    raise_on_premise_not_supported(PUSH_ARTICLES_API)
     api_url = get_api_url(PUSH_ARTICLES_API)
     token = await get_access_token(api_url, PUSH_ARTICLES_API)
     params = {'company': company, 'store': store}
@@ -224,6 +264,9 @@ async def blink_article_led(led_blink_list: list, company: str, store: str):
 # One company's stores, at most SEARCH_PAGE_SIZE rows. store_name is SOLUM's case-sensitive "contains"
 # match. SOLUM answers 401 (not 404) for a company this account cannot see, so it gets its own message.
 async def list_stores(company: str, store_name: Optional[str] = None):
+    if is_on_premise():
+        return await list_on_premise_stations(store_name)
+
     api_url = get_api_url(LIST_STORES_API)
     token = await get_access_token(api_url, LIST_STORES_API)
     params = {'company': company, 'size': SEARCH_PAGE_SIZE}
@@ -246,6 +289,9 @@ async def list_stores(company: str, store_name: Optional[str] = None):
 # List Articles
 # A store's articles, at most SEARCH_PAGE_SIZE rows. name is a case-insensitive "contains" match.
 async def list_articles(company: str, store: str, name: Optional[str] = None):
+    if is_on_premise():
+        return await list_on_premise_articles(store, name)
+
     api_url = get_api_url(LIST_ARTICLES_API)
     token = await get_access_token(api_url, LIST_ARTICLES_API)
     params = {'company': company, 'store': store, 'size': SEARCH_PAGE_SIZE}
@@ -259,3 +305,134 @@ async def list_articles(company: str, store: str, name: Optional[str] = None):
     if not isinstance(body, dict):
         return []
     return body.get('articleList') or []
+
+
+# List On Premise Stations
+# GET /stations without a token; a station is the store. Rows use the SaaS keys (store, storeName) so
+# callers read both servers the same way. store_name is a case-sensitive "contains" match like SaaS.
+async def list_on_premise_stations(store_name: Optional[str] = None):
+    api_url = get_api_url(ON_PREMISE_LIST_STORES_API)
+    response = await send_solum_request(api_url, ON_PREMISE_LIST_STORES_API)
+
+    body = read_solum_body(response)
+    if not isinstance(body, list):
+        return []
+    stations = [{'store': row.get('code'), 'storeName': row.get('name')} for row in body]
+    if store_name:
+        stations = [row for row in stations if store_name in (row['storeName'] or '')]
+    return stations[:SEARCH_PAGE_SIZE]
+
+
+# List On Premise Articles
+# GET /articles?stationCode=... without a token; SOLUM answers an empty 204 for a station with no articles.
+# Rows use the SaaS keys (articleId, articleName). name is a case-insensitive "contains" match on the id
+# or name, done here because On Premise has no name filter.
+async def list_on_premise_articles(store: str, name: Optional[str] = None):
+    api_url = get_api_url(ON_PREMISE_LIST_ARTICLES_API)
+    params = {'stationCode': store, 'size': ON_PREMISE_ARTICLE_SEARCH_SIZE if name else SEARCH_PAGE_SIZE}
+    response = await send_solum_request(api_url, ON_PREMISE_LIST_ARTICLES_API, params=params)
+
+    body = read_solum_body(response)
+    if not isinstance(body, list):
+        return []
+    articles = [{'articleId': row.get('id'), 'articleName': row.get('name')} for row in body]
+    if name:
+        keyword = name.lower()
+        articles = [row for row in articles
+                    if keyword in (row['articleId'] or '').lower() or keyword in (row['articleName'] or '').lower()]
+    return articles[:SEARCH_PAGE_SIZE]
+
+
+# Blink On Premise Label LED By Article Id
+# On Premise blinks by label, not article: the article's labels are read from GET /labels/article, then
+# PUT /labels/contents/led gets one entry per label. Returns (url, payload, status_code, body).
+async def blink_on_premise_led(article_id: str, color: str, store: str):
+    api_url = get_api_url(ON_PREMISE_BLINK_LED_API)
+
+    label_params = {'stationCode': store, 'articleId': article_id}
+    response = await send_solum_request(api_url, ON_PREMISE_ARTICLE_LABELS_API, ON_PREMISE_BLINK_LED_API,
+                                        params=label_params)
+    labels = read_solum_body(response)
+    label_codes = [row.get('labelCode') for row in labels if row.get('labelCode')] \
+        if isinstance(labels, list) else []
+    if not label_codes:
+        raise build_solum_error(ON_PREMISE_ARTICLE_LABELS_API,
+                                build_full_url(api_url, ON_PREMISE_ARTICLE_LABELS_PATH, label_params),
+                                f'artikel {article_id} belum terhubung ke label di store {store}',
+                                ON_PREMISE_BLINK_LED_API, response.status_code, labels)
+
+    payload = [{'color': color, 'duration': SOLUM_LED_DURATION, 'patternId': SOLUM_LED_PATTERN_ID,
+                'labelCode': label_code} for label_code in label_codes]
+    logger.info('[SOLUM] -> PUT %s%s %s', api_url, ON_PREMISE_LABELS_LED_PATH, json.dumps(payload))
+    response = await send_solum_request(api_url, ON_PREMISE_BLINK_LED_API, json=payload)
+    return build_full_url(api_url, ON_PREMISE_LABELS_LED_PATH), payload, response.status_code, \
+        read_solum_body(response)
+
+
+# Push On Premise Article Data
+# POST /articles with {"dataList": [...]}. The article is read first (GET /articles/article) and only the
+# stock keys in data are replaced, so the label's other fields (Part_Number, QR_Code, ...) and the
+# article name are kept. An article the station does not have yet (empty 204) is created with
+# name as its name. Returns (url, payload, status_code, body).
+async def push_on_premise_article(article_id: str, name: str, data: dict, store: str):
+    api_url = get_api_url(ON_PREMISE_PUSH_ARTICLES_API)
+
+    response = await send_solum_request(api_url, ON_PREMISE_GET_ARTICLE_API, ON_PREMISE_PUSH_ARTICLES_API,
+                                        params={'stationCode': store, 'articleId': article_id})
+    article = read_solum_body(response)
+    if not isinstance(article, dict):
+        article = {}
+
+    payload = {'dataList': [{
+        'stationCode': store,
+        'id': article_id,
+        'name': article.get('name') or name,
+        'nfc': article.get('nfc') or '',
+        'data': {**(article.get('data') or {}), **data},
+    }]}
+    logger.info('[SOLUM] -> POST %s%s %s', api_url, ON_PREMISE_ARTICLES_PATH, json.dumps(payload))
+    response = await send_solum_request(api_url, ON_PREMISE_PUSH_ARTICLES_API, json=payload)
+    return build_full_url(api_url, ON_PREMISE_ARTICLES_PATH), payload, response.status_code, \
+        read_solum_body(response)
+
+
+# List On Premise Labels
+# Every label of every station from GET /labels, page by page (page is 0-based, X-totalPages says how
+# many there are). An empty 204 means there are no labels.
+async def list_on_premise_labels():
+    api_url = get_api_url(ON_PREMISE_LIST_LABELS_API)
+    labels = []
+    page = 0
+    total_pages = 1
+    while page < total_pages:
+        response = await send_solum_request(api_url, ON_PREMISE_LIST_LABELS_API,
+                                            params={'page': page, 'size': ON_PREMISE_LABEL_LIST_SIZE})
+        body = read_solum_body(response)
+        if not isinstance(body, list):
+            break
+        labels.extend(body)
+        total_pages = int(response.headers.get('X-totalPages') or 1)
+        page += 1
+    return labels
+
+
+# Get On Premise Label Total Page
+# How many pages the label's hardware has (totalPage of GET /labels/type), or None when AIMS does not say.
+async def get_on_premise_label_total_page(label_code: str):
+    api_url = get_api_url(ON_PREMISE_LABEL_TYPE_API)
+    response = await send_solum_request(api_url, ON_PREMISE_LABEL_TYPE_API, params={'code': label_code})
+    body = read_solum_body(response)
+    total_page = body.get('totalPage') if isinstance(body, dict) else None
+    return total_page if isinstance(total_page, int) else None
+
+
+# Change On Premise Label Page
+# One POST /labels/contents/page for all the labels: {"labels": [{"labelCode", "displayPage"}, ...]}.
+# Returns (status_code, body).
+async def change_on_premise_label_page(label_codes: list, display_page: int):
+    api_url = get_api_url(ON_PREMISE_CHANGE_PAGE_API)
+    payload = {'labels': [{'labelCode': label_code, 'displayPage': display_page} for label_code in label_codes]}
+
+    logger.info('[SOLUM] -> POST %s%s %s', api_url, ON_PREMISE_LABELS_PAGE_PATH, json.dumps(payload))
+    response = await send_solum_request(api_url, ON_PREMISE_CHANGE_PAGE_API, json=payload)
+    return response.status_code, read_solum_body(response)

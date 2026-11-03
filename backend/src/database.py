@@ -17,8 +17,12 @@ Base = declarative_base()
 
 try:
     with engine.connect() as connection:
-        db_name = connection.execute(
-            text("SELECT current_database();")).scalar()
+        # SQLite (backend/data/solum-panama.db) is one file with no database name to check
+        if engine.dialect.name == 'sqlite':
+            db_name = 'solum-panama'
+        else:
+            db_name = connection.execute(
+                text("SELECT current_database();")).scalar()
         if db_name == 'solum-panama':
             print("✅ Database connection successful")
         else:

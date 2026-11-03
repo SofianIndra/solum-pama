@@ -84,14 +84,14 @@ Urutan proses:
 
    | Kolom | Key SOLUM |
    |---|---|
-   | `item_name` | `Mat_Desc` |
+   | `item_name` | `Material_Description` |
    | `mnemonic` | `Mnemonic` |
    | `own_stock` | `Own_Stock` |
    | `storage_bin` | `Storage_Bin` |
-   | `min_stock` | `MinStock` |
-   | `max_stock` | `MaxStock` |
+   | `min_stock` | `Min_Inventory` |
+   | `max_stock` | `Max_Inventory` |
    | `stock_on_hand` | `StockOnHand` |
-   | `stock_on_hand_rfid` | `StockOnHandRFID` |
+   | `stock_on_hand_rfid` | `StockRFID` |
 
    Yang dikirim selalu **kedelapan key** (nilai string, kolom kosong → `""`) plus
    `articleName = item_name`, supaya label tetap lengkap walau AIMS mengganti seluruh data

@@ -12,7 +12,7 @@ from resources.strings import (MS_STOCK_ALREADY_EXIST_ERROR, MS_STOCK_ARTICLE_ID
                                SOLUM_ARTICLE_NO_CHANGE, SOLUM_ARTICLE_NOT_LINKED, SOLUM_ARTICLE_PUSH_SUCCESS,
                                SOLUM_LED_SUCCESS)
 from src.config import (ACTIVE_DATA, ALL_DATA, GUEST_USER_CODE, INACTIVE_DATA, LIMIT, STOCK_SOLUM_DATA_KEYS,
-                        STOCK_STATUS_EMPTY, STOCK_STATUS_LED_COLORS, STOCK_STATUS_OVER_MAX,
+                        STOCK_SOLUM_ON_PREMISE_DATA_KEYS, STOCK_STATUS_EMPTY, STOCK_STATUS_LED_COLORS, STOCK_STATUS_OVER_MAX,
                         STOCK_STATUS_SAFE, STOCK_STATUS_UNDER_MIN, get_branch_time)
 from src.database import db_dependency
 from src.domain.master.ms_stock.models import MsStock
@@ -121,6 +121,15 @@ def build_solum_article(row: MsStock):
     return [{'articleId': row.article_id, 'articleName': row.item_name, 'data': data}]
 
 
+# Build On Premise Article Data (the stock fields only; the SOLUM client merges them into the article)
+def build_on_premise_article_data(row: MsStock):
+    data = {}
+    for column, solum_key in STOCK_SOLUM_ON_PREMISE_DATA_KEYS.items():
+        value = getattr(row, column)
+        data[solum_key] = '' if value is None else str(value)
+    return data
+
+
 # Build SOLUM LED Blink List (color follows the stock status, duration comes from SOLUM_LED_DURATION)
 def build_led_blink_list(row: MsStock):
     return [{
@@ -132,8 +141,26 @@ def build_led_blink_list(row: MsStock):
     }]
 
 
+# Blink Stock LED On Premise (best-effort like blink_stock_led): PUT /labels/contents/led on every label
+# linked to the article, so the payload is only known once the labels are found
+async def blink_on_premise_stock_led(row: MsStock, store: str):
+    color = STOCK_STATUS_LED_COLORS[row.stock_status]
+    try:
+        url, payload, status_code, body = await solum_client.blink_on_premise_led(row.article_id, color, store)
+        return SolumCallResult(
+            is_sent=True, is_success=True, message=SOLUM_LED_SUCCESS, method='PUT', url=url,
+            status_code=status_code, payload=payload, response=body)
+    except SolumError as error:
+        return SolumCallResult(
+            is_sent=True, is_success=False, message=error.message, method=error.method, url=error.url,
+            status_code=error.status_code, response=error.body)
+
+
 # Blink Stock LED (best-effort: a failure is returned as the result, never raised)
 async def blink_stock_led(row: MsStock, company: str, store: str):
+    if solum_client.is_on_premise():
+        return await blink_on_premise_stock_led(row, store)
+
     led_blink_list = build_led_blink_list(row)
     led_url = solum_client.build_url(solum_client.ARTICLES_LED_PATH, company, store)
     try:
@@ -296,6 +323,17 @@ async def update_stock(db: db_dependency, request: MsStockUpdate, item_code: str
     # Push article data to SOLUM, undo the change when SOLUM rejects it
     if not is_linked:
         solum_article = SolumCallResult(is_sent=False, is_success=True, message=SOLUM_ARTICLE_NOT_LINKED)
+    elif is_solum_changed and solum_client.is_on_premise():
+        try:
+            url, payload, status_code, body = await solum_client.push_on_premise_article(
+                ms_stock_model.article_id, ms_stock_model.item_name, build_on_premise_article_data(ms_stock_model),
+                store)
+        except SolumError as error:
+            db.rollback()
+            raise HTTPException(status_code=502, detail=error.message)
+        solum_article = SolumCallResult(
+            is_sent=True, is_success=True, message=SOLUM_ARTICLE_PUSH_SUCCESS, method='POST', url=url,
+            status_code=status_code, payload=payload, response=body)
     elif is_solum_changed:
         articles = build_solum_article(ms_stock_model)
         try:

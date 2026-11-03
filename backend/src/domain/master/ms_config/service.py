@@ -88,6 +88,16 @@ def get_solum_api_url():
         db.close()
 
 
+# Get SOLUM Server Type
+# ON_PREMISE or SAAS, read before every request like the API URL: the two servers have different APIs.
+def get_solum_server_type():
+    db = SessionLocal()
+    try:
+        return get_solum_server_values(get_config_by_code(db, SOLUM_SERVER_CODE)).server_type
+    finally:
+        db.close()
+
+
 # Get SOLUM Server Config
 def get_solum_server_config(db: db_dependency):
     row = get_config_by_code(db, SOLUM_SERVER_CODE)

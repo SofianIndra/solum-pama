@@ -29,14 +29,14 @@ lewat `resources/ddl/migration_add_ms_stock_article_id.sql`.
 | `id` | Integer PK | Auto increment |
 | `item_code` | String (index) | Kode barang dari user, unik per baris (dicek di service) |
 | `article_id` | String (index) | `articleId` SOLUM yang dihubungkan, unik per baris (dicek di service). Kosong → update tidak mengirim apa pun ke SOLUM |
-| `item_name` | String | Nama barang → SOLUM `Mat_Desc` |
+| `item_name` | String | Nama barang → SOLUM `Material_Description` |
 | `mnemonic` | String | → SOLUM `Mnemonic` |
 | `own_stock` | Integer | Stok sendiri → SOLUM `Own_Stock` |
-| `min_stock` | Integer | Batas bawah → SOLUM `MinStock` |
-| `max_stock` | Integer | Batas atas → SOLUM `MaxStock` |
+| `min_stock` | Integer | Batas bawah → SOLUM `Min_Inventory` |
+| `max_stock` | Integer | Batas atas → SOLUM `Max_Inventory` |
 | `storage_bin` | String | Lokasi simpan → SOLUM `Storage_Bin` |
 | `stock_on_hand` | Integer | → SOLUM `StockOnHand` |
-| `stock_on_hand_rfid` | Integer | → SOLUM `StockOnHandRFID` |
+| `stock_on_hand_rfid` | Integer | → SOLUM `StockRFID` |
 | `stock_status` | String | `KOSONG` / `UNDER MIN` / `AMAN` / `OVER MAX`, selalu dihitung backend |
 | `active` | String | `ACTIVE` / `INACTIVE` |
 | `updated_at` | String | ISO 8601 |

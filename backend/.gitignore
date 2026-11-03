@@ -30,3 +30,6 @@ archive.zip
 
 # macOS
 .DS_Store
+
+# SQLite database files (backend/data/*.db)
+data/

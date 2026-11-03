@@ -16,7 +16,12 @@ uvicorn main:app --port 8000 --reload
 
 Swagger: http://127.0.0.1:8000/docs
 
-Aplikasi butuh PostgreSQL yang bisa dijangkau saat start (`Base.metadata.create_all`).
+Aplikasi butuh PostgreSQL yang bisa dijangkau saat start (`Base.metadata.create_all`). Untuk On Premise
+tanpa PostgreSQL, isi `DATABASE_URL=sqlite:///./data/solum-panama.db` (file SQLite, dibuat otomatis,
+jalankan uvicorn dari folder `backend`).
+
+Supaya web bisa dibuka dari jaringan yang sama dengan SOLUM gateway, jalankan dengan
+`uvicorn main:app --host 0.0.0.0 --port 8000 --reload`.
 
 Isi minimal `.env`: `DATABASE_URL`, `SOLUM_API_URL`, `SOLUM_COMPANY`, `SOLUM_STORE`, dan
 `SOLUM_API_TOKEN` atau `SOLUM_USERNAME` + `SOLUM_PASSWORD`. Durasi LED: `SOLUM_LED_DURATION`

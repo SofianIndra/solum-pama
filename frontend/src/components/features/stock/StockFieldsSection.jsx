@@ -21,7 +21,7 @@ const StockFieldsSection = ({ step, form, errors, onChange, header, leadingField
           value={form.item_name}
           onChange={(value) => onChange("item_name", value)}
           placeholder="Contoh: OAP DISPENSER LARGE"
-          hint="Dikirim ke SOLUM sebagai Mat_Desc."
+          hint="Dikirim ke SOLUM sebagai Material_Description."
           error={errors["stock-item_name"]}
           isRequired
           className="sm:col-span-2"
