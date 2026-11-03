@@ -1,0 +1,40 @@
+# Frontend image. The browser calls the solum-panama backend directly, so its URL is baked in at build time.
+# Build:  podman build -f df -t solum-panama-frontend --build-arg NEXT_PUBLIC_API_URL=https://<backend-host> .
+# Run:    podman run -d --name solum-panama-frontend -p 3000:3000 solum-panama-frontend
+# Only the needed paths are copied, so the host's node_modules and .env never reach the image.
+
+# The build stage runs on the host's native arch: .next is plain JS, and Turbopack crashes under qemu
+# when cross-building amd64 on Apple Silicon. deps/run follow --platform, so native modules match the target.
+FROM --platform=$BUILDPLATFORM docker.io/library/node:22-slim AS build
+WORKDIR /app
+ENV NEXT_TELEMETRY_DISABLED=1
+# NEXT_PUBLIC_ values are inlined into the browser bundle at build time, so --env-file at run time
+# cannot change them. Pass them here as --build-arg.
+ARG NEXT_PUBLIC_API_URL=http://localhost:8000
+ARG NEXT_PUBLIC_SEARCH_DEBOUNCE_MS=800
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL \
+    NEXT_PUBLIC_SEARCH_DEBOUNCE_MS=$NEXT_PUBLIC_SEARCH_DEBOUNCE_MS
+COPY package.json package-lock.json ./
+RUN npm ci
+COPY next.config.mjs jsconfig.json ./
+COPY public ./public
+COPY src ./src
+RUN npm run build && rm -rf .next/cache
+
+# Runtime dependencies only (tailwind and eslint are build-time)
+FROM docker.io/library/node:22-slim AS deps
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
+
+FROM docker.io/library/node:22-slim AS run
+WORKDIR /app
+ENV NODE_ENV=production \
+    NEXT_TELEMETRY_DISABLED=1
+COPY --chown=node:node package.json next.config.mjs ./
+COPY --from=deps --chown=node:node /app/node_modules ./node_modules
+COPY --from=build --chown=node:node /app/.next ./.next
+COPY --from=build --chown=node:node /app/public ./public
+USER node
+EXPOSE 3000
+CMD ["node_modules/.bin/next", "start", "-H", "0.0.0.0", "-p", "3000"]

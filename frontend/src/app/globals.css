@@ -1,0 +1,46 @@
+/* Semantic tokens only: use bg-primary, text-heading, border-border, ... in components, never raw hex. */
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-app), ui-sans-serif, system-ui, sans-serif;
+
+  /* Brand */
+  --color-primary: #1d4ed8;
+  --color-primary-soft: #eef4ff;
+  --color-accent: #ee1f25; /* ACS Group red */
+  --color-nav: #0f172a; /* app header background; the ACS logo has white text */
+
+  /* Text */
+  --color-heading: #0f172a;
+  --color-body: #334155;
+  --color-muted: #64748b;
+
+  /* Surfaces */
+  --color-background: #f4f6fa;
+  --color-surface: #f8fafc;
+  --color-border: #e2e8f0;
+  --color-border-strong: #cbd5e1; /* form controls need more contrast than card outlines */
+
+  /* Status (text color + soft background) */
+  --color-success: #047857;
+  --color-success-soft: #ecfdf5;
+  --color-warning: #b45309;
+  --color-warning-soft: #fffbeb;
+  --color-danger: #dc2626;
+  --color-danger-soft: #fef2f2;
+
+  /* ESL label LED colors (the color SOLUM blinks for each stock status) */
+  --color-led-green: #22c55e;
+  --color-led-red: #ef4444;
+  --color-led-yellow: #facc15;
+  --color-led-white: #ffffff;
+}
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-body);
+}

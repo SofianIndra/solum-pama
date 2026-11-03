@@ -1,0 +1,12 @@
+fastapi==0.95.2
+starlette==0.27.0
+pydantic==1.10.17
+uvicorn==0.21.1
+SQLAlchemy==2.0.34
+psycopg2-binary==2.9.9
+python-dotenv==1.0.1
+httpx==0.24.1
+python-multipart==0.0.9
+pytz==2024.1
+python-dateutil==2.9.0.post0
+email_validator==2.1.1
