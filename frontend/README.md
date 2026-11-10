@@ -42,7 +42,7 @@ Status stok & warna LED: `AMAN` → GREEN, `OVER MAX` → RED, `UNDER MIN` → Y
 ## Build image (podman)
 
 ```bash
-podman build -f df -t solum-panama-frontend --build-arg NEXT_PUBLIC_API_URL=https://<backend-host> .
+podman build -f df -t solum-pama-frontend --build-arg NEXT_PUBLIC_API_URL=https://<backend-host> .
 ```
 
 ## Struktur
@@ -57,7 +57,7 @@ src/
 ├── components/features/usedStock/   Container Pilih Artikel & Informasi Stok
 ├── components/features/editData/    Tabel stok
 ├── components/features/config/      Pilihan tipe server + panel Server Aktif
-├── services/PanamaApi/              axios ke backend: solumService, stockService, configService
+├── services/PamaApi/              axios ke backend: solumService, stockService, configService
 ├── constants/stock.js               Status stok + warna LED
 ├── utils/stockForm.js               Form stok: validasi, payload, pratinjau status
 └── utils/configForm.js              Form config: validasi, payload, pratinjau URL

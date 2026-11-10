@@ -1,9 +1,9 @@
-// The solum-panama FastAPI backend does every SOLUM call, so the browser talks to it directly.
+// The solum-pama FastAPI backend does every SOLUM call, so the browser talks to it directly.
 // No auth header is attached: every backend endpoint is public.
 import axios from "axios";
 import { showErrorToast } from "@/components/core/ToastNotification";
 
-export const panamaApi = axios.create({
+export const pamaApi = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000",
 });
 
@@ -16,7 +16,7 @@ export const getErrorMessage = (error, fallback = "Terjadi kesalahan, silakan co
   return fallback;
 };
 
-panamaApi.interceptors.response.use(
+pamaApi.interceptors.response.use(
   (response) => response,
   (error) => {
     // Requests cancelled on purpose (AbortController) are not errors for the user.
@@ -36,4 +36,4 @@ panamaApi.interceptors.response.use(
   },
 );
 
-export default panamaApi;
+export default pamaApi;

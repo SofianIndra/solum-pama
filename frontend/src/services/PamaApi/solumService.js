@@ -1,14 +1,14 @@
-import { panamaApi } from "./api";
+import { pamaApi } from "./api";
 
 // Returns { company, store, led_duration } from the backend .env; the forms start with these values.
 export const getSolumDefaults = async () => {
-  const response = await panamaApi.get("/solum/defaults");
+  const response = await pamaApi.get("/solum/defaults");
   return response.data;
 };
 
 // Returns [{ store, storeName }]. The error is shown under the store dropdown, so no toast.
 export const listStores = async ({ company, storeName }, signal) => {
-  const response = await panamaApi.get("/solum/stores", {
+  const response = await pamaApi.get("/solum/stores", {
     params: { company, store_name: storeName || undefined },
     signal,
     skipErrorToast: true,
@@ -18,7 +18,7 @@ export const listStores = async ({ company, storeName }, signal) => {
 
 // Returns [{ articleId, articleName }] matching name. The error is shown under the article dropdown, so no toast.
 export const listArticles = async ({ company, store, name }, signal) => {
-  const response = await panamaApi.get("/solum/articles", {
+  const response = await pamaApi.get("/solum/articles", {
     params: { company, store, name: name || undefined },
     signal,
     skipErrorToast: true,
@@ -29,6 +29,6 @@ export const listArticles = async ({ company, store, name }, signal) => {
 // Returns { message }. Sends the labels back to page 1 and starts the page flip cycle over from there.
 // Runs in the background on every web load, so a failure is not toasted.
 export const restartPageFlip = async () => {
-  const response = await panamaApi.post("/solum/page-flip/restart", null, { skipErrorToast: true });
+  const response = await pamaApi.post("/solum/page-flip/restart", null, { skipErrorToast: true });
   return response.data;
 };

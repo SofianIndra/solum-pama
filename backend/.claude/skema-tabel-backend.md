@@ -1,6 +1,6 @@
-# Skema Tabel Solum Panama
+# Skema Tabel Solum Pama
 
-Database: `solum-panama` (PostgreSQL).
+Database: `solum-pama` (PostgreSQL).
 
 ## ms_config
 

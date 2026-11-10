@@ -11,8 +11,8 @@ import SolumTargetFields from "@/components/features/solum/SolumTargetFields";
 import StockFieldsSection from "@/components/features/stock/StockFieldsSection";
 import StockSubmitPanel from "@/components/features/stock/StockSubmitPanel";
 import { useItemCodeCheck } from "@/hooks/useItemCodeCheck";
-import { getErrorMessage } from "@/services/PanamaApi/api";
-import { createStock, getStock, getStockByArticle } from "@/services/PanamaApi/stockService";
+import { getErrorMessage } from "@/services/PamaApi/api";
+import { createStock, getStock, getStockByArticle } from "@/services/PamaApi/stockService";
 import { buildStockPayload, createStockForm, previewStockStatus, validateStockForm } from "@/utils/stockForm";
 
 const ITEM_CODE_TAKEN_MESSAGE = "Item code ini sudah digunakan. Gunakan item code lain.";

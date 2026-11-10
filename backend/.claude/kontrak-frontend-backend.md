@@ -1,4 +1,4 @@
-# Kontrak Frontend Solum Panama
+# Kontrak Frontend Solum Pama
 
 ## 1. Endpoint yang hidup
 

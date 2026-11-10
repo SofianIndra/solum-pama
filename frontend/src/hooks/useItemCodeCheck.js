@@ -2,8 +2,8 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { SEARCH_DEBOUNCE_MS } from "@/constants/search";
-import { getErrorMessage } from "@/services/PanamaApi/api";
-import { getStock } from "@/services/PanamaApi/stockService";
+import { getErrorMessage } from "@/services/PamaApi/api";
+import { getStock } from "@/services/PamaApi/stockService";
 
 // Checks whether an item code already has ms_stock data, once the user stops typing for SEARCH_DEBOUNCE_MS.
 // status: "idle" (empty), "checking", "available", "taken", or "error" (message says why). Like

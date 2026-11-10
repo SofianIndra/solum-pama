@@ -2,7 +2,7 @@
 import { useState } from "react";
 import SearchSelect from "@/components/core/SearchSelect";
 import { useSearchOptions } from "@/hooks/useSearchOptions";
-import { listStores } from "@/services/PanamaApi/solumService";
+import { listStores } from "@/services/PamaApi/solumService";
 
 // Store dropdown filled from SOLUM for the company typed in the form; disabled until there is a company.
 // Typing searches by store name (SOLUM matches it case-sensitively).

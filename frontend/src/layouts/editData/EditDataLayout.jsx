@@ -17,8 +17,8 @@ import { SolumUpdateFailure, SolumUpdateResult } from "@/components/features/sto
 import StockFieldsSection from "@/components/features/stock/StockFieldsSection";
 import StockSubmitPanel from "@/components/features/stock/StockSubmitPanel";
 import { ACTIVE_OPTIONS } from "@/constants/stock";
-import { getErrorMessage } from "@/services/PanamaApi/api";
-import { deleteStock, filterStocks, getStock, getStockByArticle, updateStock } from "@/services/PanamaApi/stockService";
+import { getErrorMessage } from "@/services/PamaApi/api";
+import { deleteStock, filterStocks, getStock, getStockByArticle, updateStock } from "@/services/PamaApi/stockService";
 import { buildStockPayload, createStockForm, previewStockStatus, validateStockForm } from "@/utils/stockForm";
 
 const EMPTY_KEYS = { itemCode: "", articleId: "", articleName: "" };

@@ -17,13 +17,13 @@ Base = declarative_base()
 
 try:
     with engine.connect() as connection:
-        # SQLite (backend/data/solum-panama.db) is one file with no database name to check
+        # SQLite (backend/data/solum-pama.db) is one file with no database name to check
         if engine.dialect.name == 'sqlite':
-            db_name = 'solum-panama'
+            db_name = 'solum-pama'
         else:
             db_name = connection.execute(
                 text("SELECT current_database();")).scalar()
-        if db_name == 'solum-panama':
+        if db_name == 'solum-pama':
             print("✅ Database connection successful")
         else:
             print(f'❌ Wrong Database, you connect into {db_name} database')

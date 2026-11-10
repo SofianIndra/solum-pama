@@ -1,4 +1,4 @@
-# Konsep Solum Panama
+# Konsep Solum Pama
 
 Aturan yang berlaku untuk semua endpoint di service ini.
 

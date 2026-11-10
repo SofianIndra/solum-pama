@@ -2,7 +2,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { SEARCH_DEBOUNCE_MS } from "@/constants/search";
-import { getErrorMessage } from "@/services/PanamaApi/api";
+import { getErrorMessage } from "@/services/PamaApi/api";
 
 // Loads a search dropdown's options with load(params, signal) once params stop changing for
 // SEARCH_DEBOUNCE_MS. load must be a module-level function so it keeps its identity between renders.

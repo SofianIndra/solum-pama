@@ -2,7 +2,7 @@
 import { useState } from "react";
 import SearchSelect from "@/components/core/SearchSelect";
 import { useSearchOptions } from "@/hooks/useSearchOptions";
-import { listArticles } from "@/services/PanamaApi/solumService";
+import { listArticles } from "@/services/PamaApi/solumService";
 
 // Article dropdown for the chosen store's SOLUM articles: lists them all, and typing searches by name.
 // Disabled until a store is picked. onChange gets { articleId, articleName }, or null when cleared.

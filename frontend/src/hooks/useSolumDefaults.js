@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { getSolumDefaults } from "@/services/PanamaApi/solumService";
+import { getSolumDefaults } from "@/services/PamaApi/solumService";
 
 const EMPTY_DEFAULTS = { company: "", store: "", led_duration: "" };
 

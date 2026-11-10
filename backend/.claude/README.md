@@ -1,4 +1,4 @@
-# Dokumentasi Solum Panama
+# Dokumentasi Solum Pama
 
 Dokumen di folder ini adalah **ketetapan kondisi saat ini** — bukan catatan perubahan. Kalau
 perilaku backend berubah, file di sini ikut diperbarui di task yang sama, bukan ditambahi
@@ -8,7 +8,7 @@ perilaku backend berubah, file di sini ikut diperbarui di task yang sama, bukan 
 |---|---|
 | `konsep-backend.md` | Aturan yang berlaku lintas-endpoint: autentikasi, bentuk error, status ACTIVE/INACTIVE, pagination, audit kolom. **Baca ini dulu** |
 | `kontrak-frontend-backend.md` | Yang perlu diketahui FE: daftar endpoint yang hidup, penanganan error |
-| `skema-tabel-backend.md` | Struktur tabel di database `solum-panama` |
+| `skema-tabel-backend.md` | Struktur tabel di database `solum-pama` |
 | `api-planning-ms-stock.md` | Data stok per artikel: create, filter, detail, update + sinkronisasi SOLUM dan LED |
 | `api-planning-solum.md` | Default SOLUM dari `.env`, dropdown Store dan Article dari SOLUM AIMS |
 | `api-planning-ms-config.md` | Tab Config: pilih server SOLUM On Premise (IP + port) atau SaaS (API URL) |

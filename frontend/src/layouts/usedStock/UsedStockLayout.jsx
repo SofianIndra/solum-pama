@@ -5,8 +5,8 @@ import { showErrorToast, showSuccessToast, showWarningToast } from "@/components
 import SolumDefaultsGate from "@/components/features/solum/SolumDefaultsGate";
 import ArticlePickerSection from "@/components/features/usedStock/ArticlePickerSection";
 import StockInfoSection from "@/components/features/usedStock/StockInfoSection";
-import { getErrorMessage } from "@/services/PanamaApi/api";
-import { getStockByArticle, updateStock } from "@/services/PanamaApi/stockService";
+import { getErrorMessage } from "@/services/PamaApi/api";
+import { getStockByArticle, updateStock } from "@/services/PamaApi/stockService";
 import { parseAdjustAmount } from "@/utils/stockForm";
 
 const IDLE_VIEW = { status: "idle", data: null, message: "" };

@@ -1,6 +1,6 @@
 "use client";
 import { useEffect } from "react";
-import { restartPageFlip } from "@/services/PanamaApi/solumService";
+import { restartPageFlip } from "@/services/PamaApi/solumService";
 
 // Module-level flag: the call is made once per web load, not again on tab changes (the layout stays
 // mounted) or on the second effect run of React Strict Mode in dev. A browser reload resets it.

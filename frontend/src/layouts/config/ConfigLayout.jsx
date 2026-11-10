@@ -10,7 +10,7 @@ import { showErrorToast, showSuccessToast } from "@/components/core/ToastNotific
 import ConfigSubmitPanel from "@/components/features/config/ConfigSubmitPanel";
 import ServerTypeSelector from "@/components/features/config/ServerTypeSelector";
 import { SERVER_TYPE_LABELS, SERVER_TYPE_ON_PREMISE } from "@/constants/config";
-import { getSolumServerConfig, updateSolumServerConfig } from "@/services/PanamaApi/configService";
+import { getSolumServerConfig, updateSolumServerConfig } from "@/services/PamaApi/configService";
 import { buildConfigPayload, createConfigForm, isSameConfig, previewApiUrl, validateConfigForm } from "@/utils/configForm";
 
 const ConfigContent = ({ config, onSaved }) => {

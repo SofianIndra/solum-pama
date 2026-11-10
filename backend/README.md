@@ -1,6 +1,6 @@
-# Solum Panama
+# Solum Pama
 
-Backend FastAPI untuk Solum Panama: data stok per artikel (`ms_stock`) yang disinkronkan ke
+Backend FastAPI untuk Solum Pama: data stok per artikel (`ms_stock`) yang disinkronkan ke
 label ESL SOLUM AIMS, termasuk menyalakan LED label sesuai status stok. Semua panggilan SOLUM
 dilakukan di sini (frontend tidak memanggil SOLUM langsung).
 
@@ -17,7 +17,7 @@ uvicorn main:app --port 8000 --reload
 Swagger: http://127.0.0.1:8000/docs
 
 Aplikasi butuh PostgreSQL yang bisa dijangkau saat start (`Base.metadata.create_all`). Untuk On Premise
-tanpa PostgreSQL, isi `DATABASE_URL=sqlite:///./data/solum-panama.db` (file SQLite, dibuat otomatis,
+tanpa PostgreSQL, isi `DATABASE_URL=sqlite:///./data/solum-pama.db` (file SQLite, dibuat otomatis,
 jalankan uvicorn dari folder `backend`).
 
 Supaya web bisa dibuka dari jaringan yang sama dengan SOLUM gateway, jalankan dengan
