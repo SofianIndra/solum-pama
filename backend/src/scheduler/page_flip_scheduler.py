@@ -72,10 +72,24 @@ async def flip_label_pages(display_page: int):
         logger.exception('[PAGE FLIP] failed')
 
 
+# Set by restart_page_flip_scheduler; the scheduler then goes back to page 1 and times the next runs from there
+restart_requested = asyncio.Event()
+
+
+# Restart Page Flip Scheduler
+# Called each time the web is loaded: the labels go back to page 1 right away (after the run in progress, if
+# any) and the cycle starts over from there. Returns False when the scheduler is off.
+def restart_page_flip_scheduler():
+    if SOLUM_PAGE_FLIP_SECONDS <= 0:
+        return False
+    restart_requested.set()
+    return True
+
+
 # Run Page Flip Scheduler
 # The labels go to page 1 as soon as the backend starts (whatever page they were left on), then to the
 # next page every SOLUM_PAGE_FLIP_SECONDS: 1, 2, ..., SOLUM_PAGE_FLIP_PAGE_COUNT, 1, ...
-# A change in .env applies after a backend restart.
+# restart_page_flip_scheduler starts the cycle over from page 1. A change in .env applies after a backend restart.
 async def run_page_flip_scheduler():
     if SOLUM_PAGE_FLIP_SECONDS <= 0:
         logger.info('[PAGE FLIP] off (SOLUM_PAGE_FLIP_SECONDS is empty or 0)')
@@ -89,4 +103,12 @@ async def run_page_flip_scheduler():
     while True:
         await flip_label_pages(run % SOLUM_PAGE_FLIP_PAGE_COUNT + 1)
         run += 1
-        await asyncio.sleep(max(0, started_at + run * SOLUM_PAGE_FLIP_SECONDS - loop.time()))
+        try:
+            await asyncio.wait_for(restart_requested.wait(),
+                                   max(0, started_at + run * SOLUM_PAGE_FLIP_SECONDS - loop.time()))
+        except asyncio.TimeoutError:
+            continue
+        restart_requested.clear()
+        logger.info('[PAGE FLIP] restarted from page 1 (web loaded)')
+        started_at = loop.time()
+        run = 0

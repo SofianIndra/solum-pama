@@ -1,4 +1,5 @@
 import { Inter } from "next/font/google";
+import PageFlipRestart from "@/components/core/PageFlipRestart";
 import { ToastNotification } from "@/components/core/ToastNotification";
 import "./globals.css";
 
@@ -18,6 +19,7 @@ const RootLayout = ({ children }) => {
       <body className="flex min-h-full flex-col font-sans">
         {children}
         <ToastNotification />
+        <PageFlipRestart />
       </body>
     </html>
   );

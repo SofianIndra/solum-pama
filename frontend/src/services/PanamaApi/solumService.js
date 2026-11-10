@@ -25,3 +25,10 @@ export const listArticles = async ({ company, store, name }, signal) => {
   });
   return response.data.map(({ article_id: articleId, article_name: articleName }) => ({ articleId, articleName }));
 };
+
+// Returns { message }. Sends the labels back to page 1 and starts the page flip cycle over from there.
+// Runs in the background on every web load, so a failure is not toasted.
+export const restartPageFlip = async () => {
+  const response = await panamaApi.post("/solum/page-flip/restart", null, { skipErrorToast: true });
+  return response.data;
+};

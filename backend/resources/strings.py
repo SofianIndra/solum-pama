@@ -33,6 +33,8 @@ MS_CONFIG_INVALID_SAAS_API_URL_ERROR = "saas api url must start with http:// or 
 SOLUM_ARTICLE_PUSH_SUCCESS = "article data sent to solum"
 SOLUM_ARTICLE_NO_CHANGE = "no solum field changed, article data not sent"
 SOLUM_LED_SUCCESS = "led blink sent to solum"
+SOLUM_PAGE_FLIP_RESTARTED = "page flip restarted from page 1"
+SOLUM_PAGE_FLIP_OFF = "page flip scheduler is off (SOLUM_PAGE_FLIP_SECONDS is empty or 0)"
 SOLUM_ARTICLE_NOT_LINKED = "item has no article id, solum label not updated"
 
 
